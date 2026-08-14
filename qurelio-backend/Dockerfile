@@ -3,7 +3,7 @@
 FROM php:8.2-fpm-alpine as base
 
 # Install system dependencies
-RUN apk add --no-gradual --no-cache \
+RUN apk add --no-cache \
     bash \
     mysql-client \
     libpng-dev \
