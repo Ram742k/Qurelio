@@ -1,0 +1,95 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: ./qurelio-backend
+      dockerfile: Dockerfile
+    container_name: qurelio_app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./qurelio-backend:/var/www/html
+    environment:
+      APP_ENV: local
+      DB_HOST: mysql
+      REDIS_HOST: redis
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - qurelio_network
+
+  web:
+    image: nginx:alpine
+    container_name: qurelio_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./qurelio-backend:/var/www/qurelio/qurelio-backend
+      - ./qurelio-frontend/dist:/var/www/qurelio/qurelio-frontend/dist
+      - ./deployment/nginx/qurelio.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+    networks:
+      - qurelio_network
+
+  mysql:
+    image: mysql:8.0
+    container_name: qurelio_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: qurelio_prod
+      MYSQL_USER: qurelio_user
+      MYSQL_PASSWORD: SecurePasswordHere123!
+      MYSQL_ROOT_PASSWORD: RootPasswordHere123!
+    ports:
+      - "3306:3306"
+    volumes:
+      - qurelio_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - qurelio_network
+
+  redis:
+    image: redis:alpine
+    container_name: qurelio_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - qurelio_network
+
+  worker:
+    build:
+      context: ./qurelio-backend
+      dockerfile: Dockerfile
+    container_name: qurelio_worker
+    restart: unless-stopped
+    command: php artisan queue:work redis --sleep=3 --tries=3
+    depends_on:
+      - app
+      - redis
+    networks:
+      - qurelio_network
+
+networks:
+  qurelio_network:
+    driver: bridge
+
+volumes:
+  qurelio_mysql_data:
+    driver: local

@@ -1,0 +1,24 @@
+# Root GitIgnore for Qurelio Clinic Management SaaS
+
+# Node & Frontend
+node_modules/
+qurelio-frontend/node_modules/
+qurelio-frontend/dist/
+.npm
+
+# Backend & Laravel
+qurelio-backend/vendor/
+qurelio-backend/.env
+qurelio-backend/storage/*.key
+qurelio-backend/storage/logs/*.log
+qurelio-backend/storage/framework/cache/*
+qurelio-backend/storage/framework/sessions/*
+qurelio-backend/storage/framework/views/*
+qurelio-backend/bootstrap/cache/*.php
+
+# IDE & OS Files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

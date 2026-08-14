@@ -1,0 +1,26 @@
+# Qurelio SaaS - Logrotate Configuration
+# Path: /etc/logrotate.d/qurelio
+
+/var/www/qurelio/qurelio-backend/storage/logs/*.log {
+    daily
+    missingok
+    rotate 14
+    compress
+    delaycompress
+    notifempty
+    create 0664 www-data www-data
+}
+
+/var/log/nginx/qurelio_*.log {
+    daily
+    missingok
+    rotate 14
+    compress
+    delaycompress
+    sharedscripts
+    postrotate
+        if [ -f /var/run/nginx.pid ]; then
+            kill -USR1 `cat /var/run/nginx.pid`
+        fi
+    endscript
+}

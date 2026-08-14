@@ -1,0 +1,11 @@
+.git
+.github
+.env
+vendor
+node_modules
+qurelio-frontend/node_modules
+qurelio-frontend/dist
+qurelio-backend/storage/logs/*
+qurelio-backend/storage/framework/cache/*
+qurelio-backend/storage/framework/sessions/*
+qurelio-backend/storage/framework/views/*

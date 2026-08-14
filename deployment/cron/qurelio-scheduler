@@ -1,0 +1,5 @@
+# Qurelio SaaS - Production Crontab File
+# Path: /etc/cron.d/qurelio-scheduler
+
+* * * * * www-data cd /var/www/qurelio/qurelio-backend && php artisan schedule:run >> /dev/null 2>&1
+0 2 * * * www-data /var/www/qurelio/deployment/backup.sh >> /var/log/qurelio_backup.log 2>&1
