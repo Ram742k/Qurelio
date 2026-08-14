@@ -22,6 +22,17 @@ services:
     networks:
       - qurelio_network
 
+  frontend:
+    build:
+      context: ./qurelio-frontend
+      dockerfile: Dockerfile
+    container_name: qurelio_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    networks:
+      - qurelio_network
+
   web:
     image: nginx:alpine
     container_name: qurelio_nginx
@@ -35,6 +46,7 @@ services:
       - ./deployment/nginx/qurelio.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - app
+      - frontend
     networks:
       - qurelio_network
 
