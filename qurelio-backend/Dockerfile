@@ -1,10 +1,12 @@
-# Production Multi-Stage Dockerfile for Qurelio Backend (Laravel PHP 8.2 FPM)
+# Qurelio Backend - Railway Production Dockerfile
 
-FROM php:8.2-fpm-alpine as base
+FROM php:8.2-cli-alpine
 
-# Install system dependencies
+# System packages
 RUN apk add --no-cache \
     bash \
+    git \
+    unzip \
     mysql-client \
     libpng-dev \
     libjpeg-turbo-dev \
@@ -12,35 +14,32 @@ RUN apk add --no-cache \
     libzip-dev \
     icu-dev \
     oniguruma-dev \
-    git \
-    supervisor \
-    nginx
+    $PHPIZE_DEPS
 
-# Install PHP extensions
+# PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo pdo_mysql gd zip bcmath intl opcache
 
-# Install Redis extension via PECL
-RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
-    && pecl install redis \
-    && docker-php-ext-enable redis \
-    && apk del .build-deps
+# Redis extension
+RUN pecl install redis \
+    && docker-php-ext-enable redis
 
-# Copy composer from official image
+# Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-# Copy project files
+# Copy project
 COPY . .
 
-# Set environment permissions
-RUN chmod -R 775 storage bootstrap/cache \
-    && chown -R www-data:www-data storage bootstrap/cache
-
-# Install production dependencies
+# Install dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-EXPOSE 9000
+# Laravel permissions
+RUN mkdir -p storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache
 
-CMD ["php-fpm"]
+EXPOSE 8000
+
+CMD ["sh","-c","php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"]
