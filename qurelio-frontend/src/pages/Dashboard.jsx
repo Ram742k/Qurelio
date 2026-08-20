@@ -17,6 +17,8 @@ import {
   Activity,
   ClipboardList,
 } from 'lucide-react';
+import TrialBanner from '../components/common/TrialBanner';
+import UpgradeModal from '../components/common/UpgradeModal';
 
 // ─── Status badge config ─────────────────────────────────────────────────────
 const STATUS_CONFIG = {
@@ -92,6 +94,9 @@ export default function Dashboard({ setActiveTab }) {
   const [data, setData]       = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+
+  const tenant = localStorage.getItem('tenant') ? JSON.parse(localStorage.getItem('tenant')) : null;
 
   const fetchDashboard = useCallback(async () => {
     setLoading(true);
@@ -136,24 +141,24 @@ export default function Dashboard({ setActiveTab }) {
 
   return (
     <div style={{ padding: '28px 32px', backgroundColor: '#f8fafc', minHeight: 'calc(100vh - 72px)' }}>
+      {/* ── Persistent Trial Countdown Banner ───────────────────────────────── */}
+      <TrialBanner tenant={tenant} onOpenUpgrade={() => setShowUpgradeModal(true)} />
 
-      {/* ── Page Header ──────────────────────────────────────────────────────── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px' }}>
+      {/* ── Page Title & Controls ────────────────────────────────────────────── */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
         <div>
-          <h1 style={{ fontSize: '22px', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.02em' }}>
-            {greeting}, {loading ? '...' : userName.split(' ')[0]} 👋
+          <h1 style={{ fontSize: '20px', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.02em' }}>
+            Dashboard Overview
           </h1>
-          <p style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>
-            Here's what's happening in your clinic today.
-          </p>
         </div>
         <button
           onClick={fetchDashboard}
           disabled={loading}
-          style={{ height: '38px', width: '38px', borderRadius: '10px', backgroundColor: '#fff', border: '1px solid #e2e8f0', color: '#475569', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          title="Refresh dashboard"
+          style={{ height: '38px', padding: '0 14px', borderRadius: '10px', backgroundColor: '#fff', border: '1px solid #e2e8f0', color: '#475569', fontSize: '12px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
+          title="Refresh dashboard data"
         >
-          <RefreshCw size={16} style={{ animation: loading ? 'spin 0.8s linear infinite' : 'none' }} />
+          <RefreshCw size={14} style={{ animation: loading ? 'spin 0.8s linear infinite' : 'none' }} />
+          <span>Refresh</span>
         </button>
       </div>
 
@@ -426,6 +431,13 @@ export default function Dashboard({ setActiveTab }) {
           )}
         </div>
       </div>
+
+      {/* Upgrade Plan Modal */}
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        tenant={tenant}
+      />
 
       {/* Spin keyframe */}
       <style>{`

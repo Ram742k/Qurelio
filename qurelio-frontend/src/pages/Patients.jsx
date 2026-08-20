@@ -18,13 +18,20 @@ import {
   UserCheck
 } from 'lucide-react';
 
-export default function Patients() {
+export default function Patients({ autoOpenCreate, onResetAutoOpen }) {
   const [patients, setPatients] = useState([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [activeFilter, setActiveFilter] = useState('all');
+
+  useEffect(() => {
+    if (autoOpenCreate) {
+      setShowForm(true);
+      if (onResetAutoOpen) onResetAutoOpen();
+    }
+  }, [autoOpenCreate]);
 
   const [form, setForm] = useState({
     name: '',

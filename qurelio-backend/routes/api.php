@@ -12,7 +12,10 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
 // Public Health Check Endpoint
 Route::get('/health', [\App\Http\Controllers\HealthController::class, 'index']);
@@ -26,13 +29,23 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
 
-    // Dashboard
+    // Dashboard & Global Search
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+    Route::get('/global-search', [\App\Http\Controllers\GlobalSearchController::class, 'search']);
 
     Route::apiResource('patients', PatientController::class);
+    Route::get('/patients/{patient}/documents', [\App\Http\Controllers\PatientDocumentController::class, 'index']);
+    Route::post('/patients/{patient}/documents', [\App\Http\Controllers\PatientDocumentController::class, 'store']);
+    Route::delete('/documents/{document}', [\App\Http\Controllers\PatientDocumentController::class, 'destroy']);
     Route::apiResource('appointments', AppointmentController::class);
     Route::apiResource('prescriptions', PrescriptionController::class);
+    Route::get('/prescriptions/{prescription}/download-pdf', [PrescriptionController::class, 'downloadPdf']);
     Route::post('/prescriptions/{prescription}/share-whatsapp', [PrescriptionController::class, 'shareWhatsApp']);
+
+    // Medicine Master & Prescription Autocomplete (P1 Feature)
+    Route::get('/medicines/search', [\App\Http\Controllers\MedicineMasterController::class, 'search']);
+    Route::post('/medicines/custom', [\App\Http\Controllers\MedicineMasterController::class, 'storeCustom']);
+    Route::apiResource('medicines', \App\Http\Controllers\MedicineMasterController::class);
 
     // Clinic Onboarding Wizard
     Route::get('/onboarding', [OnboardingController::class, 'index']);
@@ -41,7 +54,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/onboarding/complete', [OnboardingController::class, 'complete']);
 
     // Invoices & Online Payments
+    Route::get('/invoices/gst-export', [InvoiceController::class, 'exportGstCsv']);
     Route::apiResource('invoices', InvoiceController::class)->except(['destroy']);
+    Route::get('/invoices/{invoice}/download-pdf', [InvoiceController::class, 'downloadPdf']);
     Route::post('/invoices/{invoice}/online-payment', [PaymentController::class, 'startOnlinePayment']);
     Route::post('/invoices/{invoice}/create-order', [PaymentController::class, 'startOnlinePayment']);
     Route::post('/invoices/{invoice}/verify', [PaymentController::class, 'verifyPayment']);
@@ -122,13 +137,29 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/integrations', [App\Http\Controllers\SettingsController::class, 'getIntegrations']);
             Route::put('/integrations', [App\Http\Controllers\SettingsController::class, 'updateIntegrations']);
 
-            Route::get('/backup', [App\Http\Controllers\SettingsController::class, 'getBackup']);
-            Route::post('/backup/trigger', [App\Http\Controllers\SettingsController::class, 'triggerBackup']);
-
             Route::get('/audit-logs', [App\Http\Controllers\SettingsController::class, 'getAuditLogs']);
         });
     });
+
+    // Visits / Consultation Encounters (Module 6)
+    Route::apiResource('visits', \App\Http\Controllers\VisitController::class)->only(['index', 'store', 'show']);
+    Route::get('/patients/{patient}/visits', [\App\Http\Controllers\VisitController::class, 'patientVisits']);
+
+    // Staff & RBAC Management (Module 2)
+    Route::get('/staff-members', [\App\Http\Controllers\RoleController::class, 'index']);
+    Route::post('/staff-members', [\App\Http\Controllers\RoleController::class, 'store']);
+    Route::put('/staff-members/{user}', [\App\Http\Controllers\RoleController::class, 'update']);
 });
+
+// Unauthenticated Public Booking Widget Endpoints (Module 13)
+Route::prefix('public/v1/{subdomain}')->group(function () {
+    Route::get('/clinic', [\App\Http\Controllers\PublicBookingController::class, 'clinicInfo']);
+    Route::get('/doctors', [\App\Http\Controllers\PublicBookingController::class, 'doctors']);
+    Route::get('/available-slots', [\App\Http\Controllers\PublicBookingController::class, 'availableSlots']);
+    Route::post('/book-appointment', [\App\Http\Controllers\PublicBookingController::class, 'bookAppointment']);
+});
+
+
 
 
 

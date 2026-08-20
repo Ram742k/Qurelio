@@ -396,4 +396,18 @@ class PrescriptionController extends Controller
             ]
         ]);
     }
+
+    public function downloadPdf(Request $request, Prescription $prescription)
+    {
+        if ($prescription->tenant_id !== auth()->user()->tenant_id) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
+        }
+
+        $html = \App\Services\PrescriptionPdfService::generateHtml($prescription);
+
+        return response($html)
+            ->header('Content-Type', 'text/html')
+            ->header('Content-Disposition', 'inline; filename="Prescription-RX-' . $prescription->id . '.html"');
+    }
 }
+

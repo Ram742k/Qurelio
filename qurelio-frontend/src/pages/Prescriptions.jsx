@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import api from '../api/axios';
+import MedicineAutocomplete from '../components/prescriptions/MedicineAutocomplete';
 import { generatePrescriptionPdf } from '../utils/pdfGenerator';
 import {
   FileText,
@@ -512,18 +513,26 @@ export default function Prescriptions({ initialView = 'list', initialPrescriptio
 
                   <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1.5fr 1fr 2fr', gap: '12px' }}>
                     
-                    {/* Medicine Name */}
+                    {/* Medicine Name with Autocomplete */}
                     <div>
                       <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#64748b', marginBottom: '4px' }}>
                         Medicine Name *
                       </label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="e.g. Paracetamol 650mg"
+                      <MedicineAutocomplete
                         value={med.name}
-                        onChange={e => updateMedicineField(idx, 'name', e.target.value)}
-                        style={{ width: '100%', height: '38px', padding: '0 10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', fontWeight: '600' }}
+                        onSelect={(selected) => {
+                          const updated = [...form.medicines];
+                          updated[idx] = {
+                            ...updated[idx],
+                            name: selected.name || selected.brand_name || med.name,
+                            dosage: selected.dosage || updated[idx].dosage,
+                            brand_name: selected.brand_name,
+                            generic_name: selected.generic_name,
+                            strength: selected.strength,
+                            form: selected.form,
+                          };
+                          setForm({ ...form, medicines: updated });
+                        }}
                       />
                     </div>
 

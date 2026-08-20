@@ -266,7 +266,7 @@ function todayStr() {
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export default function Appointments() {
+export default function Appointments({ autoOpenCreate, onResetAutoOpen }) {
   // View mode: 'card' | 'track'
   const [viewMode, setViewMode] = useState(
     () => localStorage.getItem('appt_view') || 'card'
@@ -356,6 +356,14 @@ export default function Appointments() {
 
   useEffect(() => { fetchAppointments(); }, [fetchAppointments]);
   useEffect(() => { fetchReferenceData(); }, [fetchReferenceData]);
+
+  // Auto-open create modal if triggered from Quick Links
+  useEffect(() => {
+    if (autoOpenCreate) {
+      openCreate();
+      if (onResetAutoOpen) onResetAutoOpen();
+    }
+  }, [autoOpenCreate]);
 
   // ─── Date navigation ───────────────────────────────────────────────────────
   function shiftDate(days) {

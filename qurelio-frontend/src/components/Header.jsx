@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Calendar, Bell, Building2, CheckCircle2, AlertCircle, Clock, FileText, X } from 'lucide-react';
+import { Calendar, Bell, Building2, CheckCircle2, AlertCircle, Clock, FileText, X, Search, Plus, ChevronDown, UserPlus, CreditCard, Zap } from 'lucide-react';
 
-export default function Header({ user, tenant }) {
+export default function Header({ user, tenant, onOpenSearch, onQuickAction }) {
+  const [showQuickLinks, setShowQuickLinks] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const quickLinksRef = useRef(null);
   const [notifications, setNotifications] = useState([
     {
       id: 1,
@@ -47,6 +49,9 @@ export default function Header({ user, tenant }) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowNotifications(false);
       }
+      if (quickLinksRef.current && !quickLinksRef.current.contains(event.target)) {
+        setShowQuickLinks(false);
+      }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -88,8 +93,137 @@ export default function Header({ user, tenant }) {
         </p>
       </div>
 
+      {/* Global Search Trigger Bar (Ctrl + K) */}
+      <button
+        onClick={onOpenSearch}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          padding: '0 14px',
+          height: '38px',
+          width: '280px',
+          backgroundColor: '#f8fafc',
+          border: '1px solid #cbd5e1',
+          borderRadius: '10px',
+          fontSize: '12px',
+          color: '#64748b',
+          fontWeight: '500',
+          cursor: 'pointer',
+          transition: 'all 0.15s ease',
+        }}
+      >
+        <Search size={16} color="#94a3b8" style={{ minWidth: '16px', width: '16px', height: '16px' }} />
+        <span>Search patients, appts, invoices...</span>
+        <kbd style={{
+          marginLeft: 'auto',
+          fontSize: '10px',
+          fontWeight: '700',
+          color: '#64748b',
+          backgroundColor: '#ffffff',
+          padding: '2px 6px',
+          borderRadius: '4px',
+          border: '1px solid #cbd5e1',
+        }}>
+          ⌘K
+        </kbd>
+      </button>
+
       {/* Right Tools & Badges */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', position: 'relative' }} ref={dropdownRef}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', position: 'relative' }} ref={dropdownRef}>
+        {/* Quick Links Dropdown Button */}
+        <div style={{ position: 'relative' }} ref={quickLinksRef}>
+          <button
+            onClick={() => setShowQuickLinks(!showQuickLinks)}
+            style={{
+              backgroundColor: '#0d9488',
+              color: '#ffffff',
+              fontWeight: '700',
+              fontSize: '12px',
+              padding: '0 14px',
+              height: '38px',
+              borderRadius: '10px',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 2px 8px rgba(13, 148, 136, 0.25)',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            <Zap size={15} fill="#ffffff" />
+            <span>Quick Links</span>
+            <ChevronDown size={14} style={{ transform: showQuickLinks ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
+          </button>
+
+          {showQuickLinks && (
+            <div style={{
+              position: 'absolute',
+              top: '46px',
+              right: 0,
+              width: '210px',
+              backgroundColor: '#ffffff',
+              borderRadius: '12px',
+              boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.15)',
+              border: '1px solid #e2e8f0',
+              padding: '6px',
+              zIndex: 50,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '2px',
+            }}>
+              <div style={{ padding: '6px 10px', fontSize: '10px', fontWeight: '800', textTransform: 'uppercase', color: '#94a3b8', letterSpacing: '0.05em' }}>
+                Create & Quick Actions
+              </div>
+              <button
+                onClick={() => { setShowQuickLinks(false); onQuickAction && onQuickAction('new_appointment'); }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', borderRadius: '8px', border: 'none', backgroundColor: 'transparent', color: '#0f172a', fontSize: '12px', fontWeight: '600', cursor: 'pointer', textAlign: 'left', width: '100%',
+                }}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = '#ccfbf1'}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                <Calendar size={15} color="#0d9488" />
+                <span>+ New Appointment</span>
+              </button>
+              <button
+                onClick={() => { setShowQuickLinks(false); onQuickAction && onQuickAction('add_patient'); }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', borderRadius: '8px', border: 'none', backgroundColor: 'transparent', color: '#0f172a', fontSize: '12px', fontWeight: '600', cursor: 'pointer', textAlign: 'left', width: '100%',
+                }}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = '#ccfbf1'}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                <UserPlus size={15} color="#2563eb" />
+                <span>+ Add Patient</span>
+              </button>
+              <button
+                onClick={() => { setShowQuickLinks(false); onQuickAction && onQuickAction('new_prescription'); }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', borderRadius: '8px', border: 'none', backgroundColor: 'transparent', color: '#0f172a', fontSize: '12px', fontWeight: '600', cursor: 'pointer', textAlign: 'left', width: '100%',
+                }}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = '#ccfbf1'}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                <FileText size={15} color="#9333ea" />
+                <span>+ New Prescription</span>
+              </button>
+              <button
+                onClick={() => { setShowQuickLinks(false); onQuickAction && onQuickAction('new_billing'); }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', borderRadius: '8px', border: 'none', backgroundColor: 'transparent', color: '#0f172a', fontSize: '12px', fontWeight: '600', cursor: 'pointer', textAlign: 'left', width: '100%',
+                }}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = '#ccfbf1'}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                <CreditCard size={15} color="#16a34a" />
+                <span>+ Create Invoice</span>
+              </button>
+            </div>
+          )}
+        </div>
+
         {/* Clinic Name Badge */}
         <div style={{
           display: 'flex',

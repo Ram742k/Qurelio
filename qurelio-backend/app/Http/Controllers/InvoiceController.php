@@ -104,5 +104,58 @@ class InvoiceController extends Controller
             'data'    => $invoice->load('patient:id,name,phone'),
         ]);
     }
+
+    public function downloadPdf(Request $request, Invoice $invoice)
+    {
+        if ($invoice->tenant_id !== auth()->user()->tenant_id) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
+        }
+
+        $html = \App\Services\InvoicePdfService::generateHtml($invoice);
+
+        return response($html)
+            ->header('Content-Type', 'text/html')
+            ->header('Content-Disposition', 'inline; filename="Invoice-' . $invoice->invoice_number . '.html"');
+    }
+
+    public function exportGstCsv(Request $request)
+    {
+        $tenantId = auth()->user()->tenant_id;
+
+        $invoices = Invoice::where('tenant_id', $tenantId)
+            ->with(['patient:id,name,phone'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $csvHeader = ["Invoice Number", "Date", "Patient Name", "Phone", "Subtotal", "GST Tax (18%)", "Total Amount", "Paid Amount", "Status", "Payment Method"];
+        $rows = [$csvHeader];
+
+        foreach ($invoices as $inv) {
+            $subtotal = $inv->amount ?? $inv->total_amount;
+            $tax = ($subtotal * 18) / 100;
+            $rows[] = [
+                $inv->invoice_number,
+                $inv->created_at ? $inv->created_at->format('Y-m-d') : date('Y-m-d'),
+                $inv->patient->name ?? 'N/A',
+                $inv->patient->phone ?? '',
+                number_format($subtotal, 2),
+                number_format($tax, 2),
+                number_format($subtotal + $tax, 2),
+                number_format($inv->paid_amount ?? 0, 2),
+                strtoupper($inv->status),
+                strtoupper($inv->payment_method ?? 'N/A'),
+            ];
+        }
+
+        $csvOutput = "";
+        foreach ($rows as $row) {
+            $csvOutput .= implode(',', array_map(fn($v) => '"' . str_replace('"', '""', $v) . '"', $row)) . "\n";
+        }
+
+        return response($csvOutput)
+            ->header('Content-Type', 'text/csv')
+            ->header('Content-Disposition', 'attachment; filename="GST_Invoice_Report_' . date('Y-m-d') . '.csv"');
+    }
 }
+
 

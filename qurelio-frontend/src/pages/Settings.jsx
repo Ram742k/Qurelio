@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
+import MedicineMasterManagement from '../components/settings/MedicineMasterManagement';
 import {
   Settings as SettingsIcon,
   Building2,
@@ -22,6 +23,8 @@ import {
   RefreshCw,
   Search,
   Lock,
+  Pill,
+  X,
 } from 'lucide-react';
 
 export default function Settings() {
@@ -65,6 +68,39 @@ export default function Settings() {
     payment_methods: ['cash', 'upi', 'card'],
   });
 
+  // Integration Modal state
+  const [showIntegModal, setShowIntegModal] = useState(false);
+  const [selectedInteg, setSelectedInteg] = useState(null);
+  const [integForm, setIntegForm] = useState({ key_id: '', key_secret: '', webhook_secret: '' });
+
+  const handleOpenIntegModal = (integ) => {
+    setSelectedInteg(integ);
+    setIntegForm({
+      key_id: '',
+      key_secret: '',
+      webhook_secret: '',
+    });
+    setShowIntegModal(true);
+  };
+
+  const handleSaveInteg = async (e) => {
+    e.preventDefault();
+    try {
+      setSaving(true);
+      await api.put('/settings/integrations', {
+        integrations: {
+          [selectedInteg.key]: integForm,
+        },
+      });
+      setShowIntegModal(false);
+      setToastMessage(`🎉 Credentials for ${selectedInteg.name} updated and secured successfully!`);
+    } catch (err) {
+      alert('Failed to update integration credentials.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   // Notification Settings state
   const [notifData, setNotifData] = useState({
     sms_appointment_reminder: true, sms_followup_reminder: true,
@@ -95,8 +131,9 @@ export default function Settings() {
   const [auditSearch, setAuditSearch] = useState('');
 
   const menuSections = [
-    { id: 'general', label: 'General', icon: SettingsIcon },
+    { id: 'general', label: 'General Settings', icon: SettingsIcon },
     { id: 'clinic', label: 'Clinic Profile', icon: Building2 },
+    { id: 'medicine-master', label: 'Medicine Master', icon: Pill },
     { id: 'working-hours', label: 'Working Hours', icon: Clock },
     { id: 'doctors', label: 'Doctor Management', icon: UserCheck },
     { id: 'staff', label: 'Staff Management', icon: Users },
@@ -488,6 +525,11 @@ export default function Settings() {
                 </form>
               )}
 
+              {/* 3. MEDICINE MASTER */}
+              {activeSection === 'medicine-master' && (
+                <MedicineMasterManagement />
+              )}
+
               {/* 3. WORKING HOURS */}
               {activeSection === 'working-hours' && (
                 <form onSubmit={handleSaveWorkingHours}>
@@ -803,10 +845,67 @@ export default function Settings() {
                           <span style={{ fontSize: '11px', fontWeight: '700', color: '#0d9488', backgroundColor: '#ccfbf1', padding: '2px 8px', borderRadius: '12px' }}>{integ.status}</span>
                         </div>
                         <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '12px' }}>Credentials secured and masked.</p>
-                        <button style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>Update API Keys</button>
+                        <button
+                          onClick={() => handleOpenIntegModal(integ)}
+                          style={{ padding: '6px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: '#f8fafc', color: '#0f172a', fontSize: '12px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <Key size={14} color="#0d9488" /> Update API Keys
+                        </button>
                       </div>
                     ))}
                   </div>
+
+                  {/* Integration Modal Dialog */}
+                  {showIntegModal && selectedInteg && (
+                    <div
+                      onClick={(e) => { if (e.target === e.currentTarget) setShowIntegModal(false); }}
+                      style={{
+                        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh',
+                        backgroundColor: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+                        zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px',
+                      }}
+                    >
+                      <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', maxWidth: '440px', width: '100%', padding: '24px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', border: '1px solid #e2e8f0' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                          <h4 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: 0 }}>Configure {selectedInteg.name}</h4>
+                          <button onClick={() => setShowIntegModal(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}><X size={18} /></button>
+                        </div>
+                        <form onSubmit={handleSaveInteg} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          <div>
+                            <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>API Key / Client ID</label>
+                            <input
+                              type="text" required placeholder="e.g. rzp_test_..."
+                              value={integForm.key_id}
+                              onChange={(e) => setIntegForm({ ...integForm, key_id: e.target.value })}
+                              style={{ width: '100%', height: '38px', padding: '0 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }}
+                            />
+                          </div>
+                          <div>
+                            <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>API Secret Key</label>
+                            <input
+                              type="password" required placeholder="••••••••••••••••"
+                              value={integForm.key_secret}
+                              onChange={(e) => setIntegForm({ ...integForm, key_secret: e.target.value })}
+                              style={{ width: '100%', height: '38px', padding: '0 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }}
+                            />
+                          </div>
+                          <div>
+                            <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>Webhook Secret (Optional)</label>
+                            <input
+                              type="text" placeholder="e.g. whsec_..."
+                              value={integForm.webhook_secret}
+                              onChange={(e) => setIntegForm({ ...integForm, webhook_secret: e.target.value })}
+                              style={{ width: '100%', height: '38px', padding: '0 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }}
+                            />
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '12px' }}>
+                            <button type="button" onClick={() => setShowIntegModal(false)} style={{ padding: '8px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: '#f1f5f9', cursor: 'pointer', fontSize: '12px', fontWeight: '700' }}>Cancel</button>
+                            <button type="submit" disabled={saving} style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', backgroundColor: '#0d9488', color: '#ffffff', cursor: 'pointer', fontSize: '12px', fontWeight: '700' }}>Save Credentials</button>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

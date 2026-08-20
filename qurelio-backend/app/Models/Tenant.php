@@ -13,6 +13,9 @@ class Tenant extends Model
         'subscription_status',
         'subscription_plan',
         'trial_ends_at',
+        'trial_extended',
+        'upgrade_nudges_sent',
+        'plan',
         'phone',
         'email',
         'address',
@@ -31,7 +34,9 @@ class Tenant extends Model
     protected $casts = [
         'working_hours'        => 'array',
         'settings'             => 'array',
+        'upgrade_nudges_sent'  => 'array',
         'onboarding_completed' => 'boolean',
+        'trial_extended'       => 'boolean',
         'trial_ends_at'        => 'datetime',
     ];
 
