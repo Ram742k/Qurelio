@@ -16,28 +16,41 @@ import {
   Stethoscope,
   Activity,
   ClipboardList,
+  Sparkles,
+  Play,
+  Check,
+  ChevronRight,
+  Zap,
+  PhoneCall,
 } from 'lucide-react';
 import TrialBanner from '../components/common/TrialBanner';
 import UpgradeModal from '../components/common/UpgradeModal';
 
 // ─── Status badge config ─────────────────────────────────────────────────────
 const STATUS_CONFIG = {
-  booked:     { label: 'Upcoming',      bg: '#dbeafe', color: '#1d4ed8' },
-  checked_in: { label: 'In Clinic',     bg: '#fef9c3', color: '#a16207' },
-  completed:  { label: 'Completed',     bg: '#dcfce7', color: '#15803d' },
-  no_show:    { label: 'No Show',       bg: '#f1f5f9', color: '#475569' },
-  cancelled:  { label: 'Cancelled',     bg: '#fee2e2', color: '#dc2626' },
+  booked:     { label: 'Upcoming',      bg: '#dbeafe', color: '#1d4ed8', dot: '#3b82f6' },
+  checked_in: { label: 'In Clinic',     bg: '#fef9c3', color: '#a16207', dot: '#eab308' },
+  completed:  { label: 'Completed',     bg: '#dcfce7', color: '#15803d', dot: '#22c55e' },
+  no_show:    { label: 'No Show',       bg: '#f1f5f9', color: '#475569', dot: '#94a3b8' },
+  cancelled:  { label: 'Cancelled',     bg: '#fee2e2', color: '#dc2626', dot: '#ef4444' },
 };
 
 function StatusBadge({ status }) {
-  const cfg = STATUS_CONFIG[status] || { label: status, bg: '#f1f5f9', color: '#475569' };
+  const cfg = STATUS_CONFIG[status] || { label: status, bg: '#f1f5f9', color: '#475569', dot: '#94a3b8' };
   return (
     <span style={{
-      display: 'inline-block', fontSize: '11px', fontWeight: '700',
-      padding: '3px 10px', borderRadius: '20px',
-      backgroundColor: cfg.bg, color: cfg.color,
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '5px',
+      fontSize: '11px',
+      fontWeight: '700',
+      padding: '4px 10px',
+      borderRadius: '20px',
+      backgroundColor: cfg.bg,
+      color: cfg.color,
       whiteSpace: 'nowrap',
     }}>
+      <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: cfg.dot }} />
       {cfg.label}
     </span>
   );
@@ -46,7 +59,7 @@ function StatusBadge({ status }) {
 // ─── Skeleton card ────────────────────────────────────────────────────────────
 function SkeletonCard() {
   return (
-    <div style={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '24px' }}>
+    <div style={{ backgroundColor: '#fff', borderRadius: '18px', border: '1px solid #e2e8f0', padding: '24px' }}>
       <div style={{ height: '12px', width: '60%', backgroundColor: '#f1f5f9', borderRadius: '6px', marginBottom: '16px' }} />
       <div style={{ height: '32px', width: '40%', backgroundColor: '#e2e8f0', borderRadius: '6px', marginBottom: '10px' }} />
       <div style={{ height: '10px', width: '50%', backgroundColor: '#f8fafc', borderRadius: '6px' }} />
@@ -54,37 +67,84 @@ function SkeletonCard() {
   );
 }
 
-// ─── Stat Card ────────────────────────────────────────────────────────────────
-function StatCard({ icon: Icon, label, sublabel, value, accent, loading }) {
+// ─── Stat Card Component ──────────────────────────────────────────────────────
+function StatCard({ icon: Icon, label, sublabel, value, accent, bgGradient, badgeText, loading }) {
   if (loading) return <SkeletonCard />;
   return (
-    <div style={{
-      backgroundColor: '#fff', borderRadius: '16px',
-      border: '1px solid #e2e8f0', padding: '24px',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-      transition: 'box-shadow 0.2s ease',
-    }}
-      onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.08)'}
-      onMouseLeave={e => e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)'}
+    <div
+      style={{
+        backgroundColor: '#ffffff',
+        borderRadius: '18px',
+        border: '1px solid #e2e8f0',
+        padding: '22px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+      onMouseEnter={e => {
+        e.currentTarget.style.boxShadow = '0 12px 24px -6px rgba(0,0,0,0.08)';
+        e.currentTarget.style.transform = 'translateY(-2px)';
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.03)';
+        e.currentTarget.style.transform = 'translateY(0)';
+      }}
     >
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px' }}>
-        <div>
-          <p style={{ fontSize: '12px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>
-            {label}
-          </p>
-          <p style={{ fontSize: '11px', color: '#94a3b8' }}>{sublabel}</p>
+      {/* Background Accent Pill */}
+      <div style={{
+        position: 'absolute',
+        top: '-15px',
+        right: '-15px',
+        width: '90px',
+        height: '90px',
+        borderRadius: '50%',
+        background: bgGradient || `${accent}10`,
+        zIndex: 0,
+        pointerEvents: 'none',
+      }} />
+
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+          <div style={{
+            width: '42px',
+            height: '42px',
+            borderRadius: '12px',
+            backgroundColor: `${accent}15`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <Icon size={22} color={accent} />
+          </div>
+
+          {badgeText && (
+            <span style={{
+              fontSize: '10px',
+              fontWeight: '800',
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+              color: accent,
+              backgroundColor: `${accent}15`,
+              padding: '3px 8px',
+              borderRadius: '12px',
+            }}>
+              {badgeText}
+            </span>
+          )}
         </div>
-        <div style={{
-          width: '40px', height: '40px', borderRadius: '12px',
-          backgroundColor: `${accent}15`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <Icon size={20} color={accent} />
+
+        <p style={{ fontSize: '12px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 2px 0' }}>
+          {label}
+        </p>
+        <p style={{ fontSize: '11px', color: '#94a3b8', margin: '0 0 12px 0' }}>{sublabel}</p>
+
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+          <span style={{ fontSize: '32px', fontWeight: '800', color: '#0f172a', lineHeight: 1, letterSpacing: '-0.02em' }}>
+            {value}
+          </span>
         </div>
       </div>
-      <p style={{ fontSize: '32px', fontWeight: '800', color: '#0f172a', lineHeight: 1, letterSpacing: '-0.02em' }}>
-        {value}
-      </p>
     </div>
   );
 }
@@ -95,6 +155,7 @@ export default function Dashboard({ setActiveTab }) {
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [callingNext, setCallingNext] = useState(false);
 
   const tenant = localStorage.getItem('tenant') ? JSON.parse(localStorage.getItem('tenant')) : null;
 
@@ -112,25 +173,34 @@ export default function Dashboard({ setActiveTab }) {
 
   useEffect(() => { fetchDashboard(); }, [fetchDashboard]);
 
+  const handleCallNextQueue = async () => {
+    try {
+      setCallingNext(true);
+      const res = await api.post('/queue/next', { doctor_id: data?.user_id });
+      if (res.data?.success) {
+        fetchDashboard();
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || 'No patients currently waiting in queue.');
+    } finally {
+      setCallingNext(false);
+    }
+  };
+
   const stats    = data?.stats || {};
   const schedule = data?.today_schedule || [];
   const userName = data?.user_name || 'Doctor';
 
-  // ─── Greeting ─────────────────────────────────────────────────────────────
-  const hour     = new Date().getHours();
-  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-
-  // ─── Error State ──────────────────────────────────────────────────────────
-  if (!loading && error) {
+  if (error) {
     return (
       <div style={{ padding: '40px', textAlign: 'center' }}>
-        <div style={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #fee2e2', padding: '48px', maxWidth: '480px', margin: '0 auto' }}>
+        <div style={{ backgroundColor: '#fff', borderRadius: '18px', border: '1px solid #fee2e2', padding: '48px', maxWidth: '480px', margin: '0 auto' }}>
           <AlertCircle size={40} color="#ef4444" style={{ margin: '0 auto 16px' }} />
           <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#0f172a', marginBottom: '8px' }}>Dashboard Unavailable</h3>
           <p style={{ fontSize: '14px', color: '#64748b', marginBottom: '24px' }}>{error}</p>
           <button
             onClick={fetchDashboard}
-            style={{ padding: '10px 24px', borderRadius: '10px', backgroundColor: '#0d9488', color: '#fff', fontWeight: '600', fontSize: '14px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+            style={{ padding: '10px 24px', borderRadius: '10px', backgroundColor: '#0d9488', color: '#fff', fontWeight: '600', fontSize: '14px', display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'pointer', border: 'none' }}
           >
             <RefreshCw size={15} /> Retry
           </button>
@@ -144,17 +214,21 @@ export default function Dashboard({ setActiveTab }) {
       {/* ── Persistent Trial Countdown Banner ───────────────────────────────── */}
       <TrialBanner tenant={tenant} onOpenUpgrade={() => setShowUpgradeModal(true)} />
 
-      {/* ── Page Title & Controls ────────────────────────────────────────────── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+      {/* ── Page Title Header Bar ────────────────────────────────────────────── */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
         <div>
-          <h1 style={{ fontSize: '20px', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.02em' }}>
-            Dashboard Overview
+          <h1 style={{ fontSize: '22px', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.02em', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span>Dashboard Overview</span>
+            <span style={{ fontSize: '11px', fontWeight: '700', backgroundColor: '#ccfbf1', color: '#0d9488', padding: '2px 8px', borderRadius: '12px' }}>Live OPD</span>
           </h1>
+          <p style={{ fontSize: '13px', color: '#64748b', margin: '4px 0 0 0' }}>
+            Welcome back, {userName}! Here is your clinic schedule & patient queue for today.
+          </p>
         </div>
         <button
           onClick={fetchDashboard}
           disabled={loading}
-          style={{ height: '38px', padding: '0 14px', borderRadius: '10px', backgroundColor: '#fff', border: '1px solid #e2e8f0', color: '#475569', fontSize: '12px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
+          style={{ height: '38px', padding: '0 16px', borderRadius: '10px', backgroundColor: '#ffffff', border: '1px solid #cbd5e1', color: '#334155', fontSize: '12px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
           title="Refresh dashboard data"
         >
           <RefreshCw size={14} style={{ animation: loading ? 'spin 0.8s linear infinite' : 'none' }} />
@@ -162,31 +236,37 @@ export default function Dashboard({ setActiveTab }) {
         </button>
       </div>
 
-      {/* ── Stat Cards ───────────────────────────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px' }}>
+      {/* ── 4 Stat Cards Grid ────────────────────────────────────────────────── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '24px' }}>
         <StatCard
           loading={loading}
           icon={Calendar}
-          label="Appointments"
-          sublabel="Today"
+          label="Today's Appts"
+          sublabel="Scheduled Bookings"
           value={stats.appointments_today ?? 0}
           accent="#0d9488"
+          bgGradient="radial-gradient(circle, rgba(13,148,136,0.15) 0%, rgba(255,255,255,0) 70%)"
+          badgeText="Today"
         />
         <StatCard
           loading={loading}
           icon={Clock}
-          label="Waiting"
-          sublabel="In Queue"
+          label="Waiting In OPD"
+          sublabel="Live Patients Waiting"
           value={stats.waiting_today ?? 0}
-          accent="#f59e0b"
+          accent="#d97706"
+          bgGradient="radial-gradient(circle, rgba(217,119,6,0.15) 0%, rgba(255,255,255,0) 70%)"
+          badgeText="Queue"
         />
         <StatCard
           loading={loading}
           icon={CheckCircle2}
           label="Completed"
-          sublabel="Today"
+          sublabel="Finished Consultations"
           value={stats.completed_today ?? 0}
           accent="#10b981"
+          bgGradient="radial-gradient(circle, rgba(16,185,129,0.15) 0%, rgba(255,255,255,0) 70%)"
+          badgeText="Done"
         />
         <StatCard
           loading={loading}
@@ -195,32 +275,35 @@ export default function Dashboard({ setActiveTab }) {
           sublabel="Registered Today"
           value={stats.new_patients_today ?? 0}
           accent="#6366f1"
+          bgGradient="radial-gradient(circle, rgba(99,102,241,0.15) 0%, rgba(255,255,255,0) 70%)"
+          badgeText="New"
         />
       </div>
 
-      {/* ── Main Content: Schedule + Right Cards ─────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '20px', alignItems: 'start' }}>
+      {/* ── Main Content Grid (Schedule Table + Right Side Widgets) ─────────── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '20px', alignItems: 'start' }}>
 
-        {/* ── Today's Schedule ─────────────────────────────────────────────── */}
-        <div style={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+        {/* ── Left Side: Today's OPD Schedule ──────────────────────────────── */}
+        <div style={{ backgroundColor: '#ffffff', borderRadius: '20px', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', overflow: 'hidden' }}>
           {/* Card Header */}
           <div style={{ padding: '20px 24px', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{ width: '32px', height: '32px', borderRadius: '10px', backgroundColor: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <ClipboardList size={16} color="#0d9488" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '12px', backgroundColor: '#ccfbf1', color: '#0d9488', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <ClipboardList size={18} />
               </div>
               <div>
-                <h3 style={{ fontSize: '15px', fontWeight: '700', color: '#0f172a' }}>Today's Schedule</h3>
-                <p style={{ fontSize: '11px', color: '#94a3b8' }}>
-                  {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: '2-digit', month: 'long' })}
+                <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: 0 }}>Today's OPD Schedule</h3>
+                <p style={{ fontSize: '11px', color: '#64748b', margin: '2px 0 0 0' }}>
+                  {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}
                 </p>
               </div>
             </div>
             <button
               onClick={() => setActiveTab && setActiveTab('appointments')}
-              style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '600', color: '#0d9488', padding: '6px 12px', borderRadius: '8px', backgroundColor: '#f0fdf4', border: '1px solid #99f6e4' }}
+              style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '700', color: '#0d9488', padding: '7px 14px', borderRadius: '10px', backgroundColor: '#ccfbf1', border: 'none', cursor: 'pointer' }}
             >
-              View All <ArrowRight size={13} />
+              <span>View All</span>
+              <ArrowRight size={14} />
             </button>
           </div>
 
@@ -239,23 +322,25 @@ export default function Dashboard({ setActiveTab }) {
               ))}
             </div>
           ) : schedule.length === 0 ? (
-            <div style={{ padding: '48px', textAlign: 'center' }}>
-              <Calendar size={36} color="#cbd5e1" style={{ margin: '0 auto 12px' }} />
-              <p style={{ fontSize: '14px', fontWeight: '600', color: '#334155', marginBottom: '6px' }}>No appointments today</p>
-              <p style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '20px' }}>Nothing scheduled yet. Book a new appointment to get started.</p>
+            <div style={{ padding: '56px 24px', textAlign: 'center' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '18px', backgroundColor: '#f1f5f9', color: '#94a3b8', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                <Calendar size={28} />
+              </div>
+              <p style={{ fontSize: '15px', fontWeight: '800', color: '#0f172a', marginBottom: '6px' }}>No Appointments Today</p>
+              <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '24px' }}>There are no scheduled OPD visits for today yet.</p>
               <button
                 onClick={() => setActiveTab && setActiveTab('appointments')}
-                style={{ padding: '8px 16px', borderRadius: '8px', backgroundColor: '#0d9488', color: '#fff', fontWeight: '600', fontSize: '13px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                style={{ padding: '10px 20px', borderRadius: '10px', backgroundColor: '#0d9488', color: '#ffffff', fontWeight: '700', fontSize: '13px', display: 'inline-flex', alignItems: 'center', gap: '8px', border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(13,148,136,0.2)' }}
               >
-                <CalendarPlus size={14} /> Book Appointment
+                <CalendarPlus size={16} /> Book New Appointment
               </button>
             </div>
           ) : (
-            <div style={{ padding: '8px 0' }}>
-              {/* Header row */}
-              <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr 140px 100px', gap: '16px', padding: '10px 24px', borderBottom: '1px solid #f1f5f9' }}>
-                {['Time', 'Patient', 'Doctor', 'Status'].map(h => (
-                  <p key={h} style={{ fontSize: '11px', fontWeight: '700', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</p>
+            <div>
+              {/* Header Row */}
+              <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr 140px 110px 90px', gap: '12px', padding: '12px 24px', borderBottom: '1px solid #f1f5f9', backgroundColor: '#f8fafc' }}>
+                {['Time', 'Patient Details', 'Doctor', 'Status', 'Action'].map(h => (
+                  <p key={h} style={{ fontSize: '11px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>{h}</p>
                 ))}
               </div>
 
@@ -263,167 +348,249 @@ export default function Dashboard({ setActiveTab }) {
                 <div
                   key={appt.id}
                   style={{
-                    display: 'grid', gridTemplateColumns: '80px 1fr 140px 100px', gap: '16px',
-                    padding: '14px 24px', alignItems: 'center',
-                    backgroundColor: idx % 2 === 0 ? '#fff' : '#fafafa',
-                    borderBottom: '1px solid #f8fafc',
-                    transition: 'background-color 0.1s',
+                    display: 'grid', gridTemplateColumns: '80px 1fr 140px 110px 90px', gap: '12px',
+                    padding: '16px 24px', alignItems: 'center',
+                    backgroundColor: idx % 2 === 0 ? '#ffffff' : '#fafafa',
+                    borderBottom: '1px solid #f1f5f9',
+                    transition: 'all 0.15s ease',
                   }}
                   onMouseEnter={e => e.currentTarget.style.backgroundColor = '#f0fdf4'}
-                  onMouseLeave={e => e.currentTarget.style.backgroundColor = idx % 2 === 0 ? '#fff' : '#fafafa'}
+                  onMouseLeave={e => e.currentTarget.style.backgroundColor = idx % 2 === 0 ? '#ffffff' : '#fafafa'}
                 >
-                  {/* Time */}
-                  <div style={{ backgroundColor: '#f0fdf4', borderRadius: '8px', padding: '6px 10px', textAlign: 'center', display: 'inline-flex', flexDirection: 'column', alignItems: 'center', width: 'fit-content' }}>
+                  {/* Time Badge */}
+                  <div style={{ backgroundColor: '#ccfbf1', borderRadius: '10px', padding: '6px 10px', textAlign: 'center', display: 'inline-flex', flexDirection: 'column', alignItems: 'center', width: 'fit-content' }}>
                     <span style={{ fontSize: '13px', fontWeight: '800', color: '#0d9488', lineHeight: 1 }}>
                       {appt.time.split(' ')[0]}
                     </span>
-                    <span style={{ fontSize: '10px', fontWeight: '600', color: '#0f766e' }}>
+                    <span style={{ fontSize: '10px', fontWeight: '700', color: '#0f766e', marginTop: '2px' }}>
                       {appt.time.split(' ')[1]}
                     </span>
                   </div>
 
-                  {/* Patient */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  {/* Patient Avatar & Name */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div style={{
-                      width: '34px', height: '34px', borderRadius: '50%',
+                      width: '36px', height: '36px', borderRadius: '12px',
                       backgroundColor: '#e0f2fe', color: '#0284c7',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontWeight: '700', fontSize: '12px', flexShrink: 0,
+                      fontWeight: '800', fontSize: '12px', flexShrink: 0,
                     }}>
                       {appt.patient?.name?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'PT'}
                     </div>
                     <div>
-                      <p style={{ fontSize: '14px', fontWeight: '600', color: '#0f172a' }}>
+                      <p style={{ fontSize: '14px', fontWeight: '700', color: '#0f172a', margin: 0 }}>
                         {appt.patient?.name || 'Unknown'}
                       </p>
-                      <p style={{ fontSize: '11px', color: '#94a3b8' }}>{appt.type}</p>
+                      <p style={{ fontSize: '11px', color: '#64748b', margin: '2px 0 0 0' }}>{appt.type || 'Consultation'}</p>
                     </div>
                   </div>
 
-                  {/* Doctor */}
-                  <p style={{ fontSize: '13px', color: '#475569', fontWeight: '500' }}>
+                  {/* Doctor Name */}
+                  <p style={{ fontSize: '13px', color: '#334155', fontWeight: '600', margin: 0 }}>
                     Dr. {appt.doctor?.name || '—'}
                   </p>
 
-                  {/* Status */}
+                  {/* Status Badge */}
                   <StatusBadge status={appt.status} />
+
+                  {/* Quick Action Button */}
+                  <div>
+                    {appt.status === 'checked_in' || appt.status === 'booked' ? (
+                      <button
+                        onClick={() => setActiveTab && setActiveTab('prescription')}
+                        style={{
+                          padding: '6px 10px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          backgroundColor: '#0d9488',
+                          color: '#ffffff',
+                          fontSize: '11px',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                        }}
+                      >
+                        <FileText size={12} />
+                        <span>Rx</span>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => setActiveTab && setActiveTab('appointments')}
+                        style={{
+                          padding: '6px 10px',
+                          borderRadius: '8px',
+                          border: '1px solid #cbd5e1',
+                          backgroundColor: '#ffffff',
+                          color: '#475569',
+                          fontSize: '11px',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        View
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        {/* ── Right Side Cards ─────────────────────────────────────────────── */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {/* ── Right Side Widgets Column ──────────────────────────────────────── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
-          {/* Quick Actions */}
-          <div style={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '20px' }}>
-            <h3 style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Activity size={14} color="#0d9488" /> Quick Actions
+          {/* Widget 1: OPD Live Queue Control */}
+          <div style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '20px',
+            border: '1px solid #e2e8f0',
+            padding: '20px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+              <h3 style={{ fontSize: '14px', fontWeight: '800', color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Zap size={16} color="#d97706" /> Live OPD Queue
+              </h3>
+              <span style={{ fontSize: '10px', fontWeight: '700', backgroundColor: '#fef3c7', color: '#b45309', padding: '2px 8px', borderRadius: '12px' }}>
+                {stats.waiting_today ?? 0} Waiting
+              </span>
+            </div>
+
+            <div style={{
+              backgroundColor: '#fffbeb',
+              border: '1px solid #fde68a',
+              borderRadius: '14px',
+              padding: '16px',
+              marginBottom: '14px',
+              textAlign: 'center',
+            }}>
+              <p style={{ fontSize: '11px', fontWeight: '700', color: '#b45309', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>
+                Patients In Waiting Area
+              </p>
+              <p style={{ fontSize: '32px', fontWeight: '800', color: '#78350f', margin: '4px 0 0 0', lineHeight: 1 }}>
+                {stats.waiting_today ?? 0}
+              </p>
+            </div>
+
+            <button
+              onClick={handleCallNextQueue}
+              disabled={callingNext}
+              style={{
+                width: '100%',
+                padding: '12px',
+                borderRadius: '12px',
+                border: 'none',
+                backgroundColor: '#d97706',
+                color: '#ffffff',
+                fontWeight: '800',
+                fontSize: '13px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 12px rgba(217,119,6,0.25)',
+              }}
+            >
+              <PhoneCall size={16} />
+              <span>{callingNext ? 'Calling...' : 'Call Next Token'}</span>
+            </button>
+          </div>
+
+          {/* Widget 2: 4 Quick Actions Grid */}
+          <div style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '20px',
+            border: '1px solid #e2e8f0',
+            padding: '20px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+          }}>
+            <h3 style={{ fontSize: '14px', fontWeight: '800', color: '#0f172a', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Activity size={16} color="#0d9488" /> Quick Actions
             </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
               {[
-                { icon: UserPlus, label: 'Add Patient', tab: 'patients', bg: '#f0fdf4', color: '#0d9488', border: '#99f6e4' },
-                { icon: CalendarPlus, label: 'New Appointment', tab: 'appointments', bg: '#eff6ff', color: '#2563eb', border: '#bfdbfe' },
-                { icon: FileText, label: 'Prescription', tab: 'prescription', bg: '#fef3c7', color: '#d97706', border: '#fde68a' },
-                { icon: CreditCard, label: 'Billing', tab: 'billing', bg: '#f5f3ff', color: '#7c3aed', border: '#ddd6fe' },
+                { icon: UserPlus, label: 'Add Patient', tab: 'patients', bg: '#ccfbf1', color: '#0d9488', border: '#99f6e4' },
+                { icon: CalendarPlus, label: 'Appointment', tab: 'appointments', bg: '#dbeafe', color: '#1d4ed8', border: '#bfdbfe' },
+                { icon: FileText, label: 'Prescription', tab: 'prescription', bg: '#fef3c7', color: '#b45309', border: '#fde68a' },
+                { icon: CreditCard, label: 'Billing', tab: 'billing', bg: '#f3e8ff', color: '#6b21a8', border: '#e9d5ff' },
               ].map(({ icon: Icon, label, tab, bg, color, border }) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab && setActiveTab(tab)}
                   style={{
-                    padding: '12px 10px', borderRadius: '12px',
-                    backgroundColor: bg, border: `1px solid ${border}`,
-                    color, fontSize: '12px', fontWeight: '600',
-                    display: 'flex', alignItems: 'center', gap: '6px',
-                    justifyContent: 'center', flexDirection: 'column',
+                    padding: '14px 10px',
+                    borderRadius: '14px',
+                    backgroundColor: bg,
+                    border: `1px solid ${border}`,
+                    color,
+                    fontSize: '12px',
+                    fontWeight: '800',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    justifyContent: 'center',
+                    flexDirection: 'column',
+                    cursor: 'pointer',
                     transition: 'all 0.15s ease',
                   }}
-                  onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-1px)'}
-                  onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 6px 14px rgba(0,0,0,0.06)';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
                 >
-                  <Icon size={16} />
+                  <Icon size={18} />
                   <span>{label}</span>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* New Patients Card */}
-          <div style={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-              <h3 style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <UserPlus size={14} color="#6366f1" /> New Patients
-              </h3>
-              <span style={{ fontSize: '10px', color: '#94a3b8', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Today</span>
-            </div>
-            {loading ? (
-              <div style={{ height: '48px', backgroundColor: '#f1f5f9', borderRadius: '10px' }} />
-            ) : stats.new_patients_today === 0 ? (
-              <div style={{ padding: '16px', backgroundColor: '#f8fafc', borderRadius: '10px', textAlign: 'center' }}>
-                <p style={{ fontSize: '12px', color: '#94a3b8' }}>No new patients today</p>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', backgroundColor: '#f5f3ff', borderRadius: '12px' }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ fontSize: '20px', fontWeight: '800', color: '#fff' }}>{stats.new_patients_today}</span>
-                </div>
-                <div>
-                  <p style={{ fontSize: '14px', fontWeight: '700', color: '#0f172a' }}>
-                    {stats.new_patients_today} new patient{stats.new_patients_today !== 1 ? 's' : ''}
-                  </p>
-                  <p style={{ fontSize: '12px', color: '#6366f1', fontWeight: '500' }}>registered today</p>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Pending Payments Card */}
-          <div style={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-              <h3 style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <CreditCard size={14} color="#f59e0b" /> Pending Payments
-              </h3>
-            </div>
-            {loading ? (
-              <div style={{ height: '48px', backgroundColor: '#f1f5f9', borderRadius: '10px' }} />
-            ) : (
-              <div style={{ padding: '16px', backgroundColor: '#fef9c3', borderRadius: '12px', border: '1px solid #fde68a' }}>
-                <p style={{ fontSize: '11px', color: '#92400e', fontWeight: '600', marginBottom: '6px' }}>
-                  Billing module not yet active
-                </p>
-                <p style={{ fontSize: '12px', color: '#78350f' }}>
-                  Payment tracking will be available once the billing module is enabled.
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Clinic Summary */}
+          {/* Widget 3: Premium Dark Clinic Summary Card */}
           {!loading && data?.tenant_name && (
             <div style={{
               background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-              borderRadius: '16px', padding: '20px', color: '#fff',
+              borderRadius: '20px',
+              padding: '22px',
+              color: '#ffffff',
+              boxShadow: '0 8px 24px rgba(15,23,42,0.15)',
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
-                <div style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: '#0d9488', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Stethoscope size={18} color="#fff" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                <div style={{
+                  width: '38px',
+                  height: '38px',
+                  borderRadius: '12px',
+                  backgroundColor: '#0d9488',
+                  color: '#ffffff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <Stethoscope size={20} />
                 </div>
                 <div>
-                  <p style={{ fontSize: '14px', fontWeight: '700', color: '#fff' }}>{data.tenant_name}</p>
-                  <p style={{ fontSize: '11px', color: '#94a3b8' }}>Clinic Dashboard</p>
+                  <p style={{ fontSize: '15px', fontWeight: '800', color: '#ffffff', margin: 0 }}>{data.tenant_name}</p>
+                  <p style={{ fontSize: '11px', color: '#94a3b8', margin: '2px 0 0 0' }}>Qurelio Health Active Tenant</p>
                 </div>
               </div>
+
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 {[
                   { label: 'Today\'s Appts', val: stats.appointments_today ?? 0 },
                   { label: 'Completed',      val: stats.completed_today ?? 0 },
-                  { label: 'Waiting',        val: stats.waiting_today ?? 0 },
+                  { label: 'In OPD Queue',   val: stats.waiting_today ?? 0 },
                   { label: 'New Patients',   val: stats.new_patients_today ?? 0 },
                 ].map(({ label, val }) => (
-                  <div key={label} style={{ backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: '10px', padding: '10px 12px' }}>
-                    <p style={{ fontSize: '10px', color: '#94a3b8', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</p>
-                    <p style={{ fontSize: '20px', fontWeight: '800', color: '#fff', lineHeight: 1, marginTop: '4px' }}>{val}</p>
+                  <div key={label} style={{ backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: '12px', padding: '12px' }}>
+                    <p style={{ fontSize: '10px', color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>{label}</p>
+                    <p style={{ fontSize: '22px', fontWeight: '800', color: '#ffffff', lineHeight: 1, margin: '6px 0 0 0' }}>{val}</p>
                   </div>
                 ))}
               </div>
@@ -439,7 +606,7 @@ export default function Dashboard({ setActiveTab }) {
         tenant={tenant}
       />
 
-      {/* Spin keyframe */}
+      {/* Spin Keyframe Animation */}
       <style>{`
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
       `}</style>

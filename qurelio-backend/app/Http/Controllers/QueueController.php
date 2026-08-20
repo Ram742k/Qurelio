@@ -215,27 +215,36 @@ class QueueController extends Controller
      */
     public function callNext(Request $request)
     {
-        $validated = $request->validate([
-            'doctor_id' => 'required|integer',
-        ]);
-
         $tenantId = auth()->user()->tenant_id;
-        $doctorId = $validated['doctor_id'];
+        $user = auth()->user();
+
+        $doctorId = $request->input('doctor_id');
+        if (!$doctorId) {
+            if ($user->hasRole('doctor')) {
+                $doctorId = $user->id;
+            } else {
+                $doctorId = User::where('tenant_id', $tenantId)->role('doctor')->value('id') ?? $user->id;
+            }
+        }
 
         return DB::transaction(function () use ($doctorId, $tenantId) {
-            // Find earliest eligible waiting token for the doctor, locking the row
-            $nextToken = QueueToken::where('doctor_id', $doctorId)
-                ->where('tenant_id', $tenantId)
+            // Find earliest eligible waiting token for doctor or clinic fallback
+            $query = QueueToken::where('tenant_id', $tenantId)
                 ->where('status', 'waiting')
-                ->whereDate('created_at', today())
-                ->orderBy('id')
-                ->lockForUpdate()
-                ->first();
+                ->whereDate('created_at', today());
+
+            $nextToken = null;
+            if ($doctorId) {
+                $nextToken = (clone $query)->where('doctor_id', $doctorId)->orderBy('id')->lockForUpdate()->first();
+            }
+            if (!$nextToken) {
+                $nextToken = $query->orderBy('id')->lockForUpdate()->first();
+            }
 
             if (!$nextToken) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'No patients currently waiting in queue.',
+                    'message' => 'No patients currently waiting in queue for today.',
                 ], 422);
             }
 
